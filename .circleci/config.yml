@@ -93,8 +93,8 @@ commands:
             terraform init -backend-config ./backend.tfvars
             rm key.json
             terraform plan -var-file ./dev.tfvars
-            terraform validate -var-file ./dev.tfvars
-            terraform refresh
+            terraform validate
+            terraform refresh -var-file ./dev.tfvars
 
       # Build docker image & push to GCR:
       # - setup_remote_docker

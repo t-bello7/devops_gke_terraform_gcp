@@ -13,26 +13,26 @@ workflows:
                 only: main
 
 jobs:
-  # main:
-  #   docker:
-  #     - image: circleci/node:10
-  #   steps:
-      # - checkout
-      # - restore_cache:
-      #     keys:
-      #       - v1-dependencies-{{ checksum "app/yarn.lock" }}
-      #       - v1-dependencies-
-      # - run:
-      #     name: Install dependencies
-      #     command: cd app && yarn install
-      # - save_cache:
-      #     paths:
-      #       - ~/.cache/yarn
-      #       - app/node_modules
-      #     key: v1-dependencies-{{ checksum "app/yarn.lock" }}
-      # - run:
-      #     name: Run test
-      #     command: cd app && yarn test
+  main:
+    docker:
+      - image: circleci/node:10
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "app/yarn.lock" }}
+            - v1-dependencies-
+      - run:
+          name: Install dependencies
+          command: cd front-end-master && yarn install
+      - save_cache:
+          paths:
+            - ~/.cache/yarn
+            - app/node_modules
+          key: v1-dependencies-{{ checksum "app/yarn.lock" }}
+      - run:
+          name: Run test
+          command: cd front-end-master && yarn test
   deploy-main:
     executor: default-executor
     environment:
@@ -96,19 +96,20 @@ commands:
             terraform refresh -var-file ./dev.tfvars
 
       # Build docker image & push to GCR:
-      # - setup_remote_docker
-      # - run:
-      #     name: Build Docker image
-      #     command: |
-      #       docker build \
-      #         --build-arg COMMIT_REF=${CIRCLE_SHA1} \
-      #         --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
-      #         -t $(terraform output image_url) ~/project/app
-      # - run:
-      #     name: Push image to Google Container Registry
-      #     command: |
-      #       gcloud auth configure-docker
-      #       docker push $(terraform output image_url)
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          checkout: ~/project/shop-frontend
+          command: |
+            docker build \
+              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
+              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
+              -t $(terraform output image_url) ~/project/app
+      - run:
+          name: Push image to Google Container Registry
+          command: |
+            gcloud auth configure-docker
+            docker push $(terraform output image_url)
 
       # Update infra:
       # - run:

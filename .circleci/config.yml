@@ -63,8 +63,8 @@ commands:
         type: env_var_name
     steps:
       # Install deps, checkout repo & setup CLI tools:
-      - checkout:
-          path: ~/project
+      # - checkout:
+      #     path: ~/project
       - run:
           name: Install dependencies
           command: |

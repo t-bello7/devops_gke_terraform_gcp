@@ -87,7 +87,7 @@ commands:
             export K8S_BACKEND_SERVICE_NAME=$(gcloud compute backend-services list  \
               --format=json | jq '.[] | select(.description | fromjson | ."kubernetes.io/service-name" == $service_name) | .name' \
               --arg service_name "$SERVICE_NAME" --raw-output)
-            envsubst < ./dev.tfvars.template > ./terraform.tfvars
+            envsubst < dev.tfvars.template > terraform.tfvars
             terraform init -input=false
             terraform validate
             terraform refresh

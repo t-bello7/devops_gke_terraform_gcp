@@ -62,7 +62,7 @@ commands:
       google_project_id:
         type: env_var_name
     steps:
-      Install deps, checkout repo & setup CLI tools:
+      #Install deps, checkout repo & setup CLI tools:
       - checkout:
           path: ~/project
       - run:

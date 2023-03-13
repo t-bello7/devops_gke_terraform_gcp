@@ -6,8 +6,8 @@ workflows:
       # - main
       # Push to main branch triggers deployment to `main` environment:
       - deploy-main:
-          requires:
-            - main
+          # requires:
+          #   - main
           filters:
             branches:
                 only: main

@@ -1,3 +1,3 @@
-gcp_credentials = "${GCLOUD_SERVICE_KEY}"
+gcp_credentials = "key.json"
 gcp_project_id = "${GOOGLE_PROJECT_ID}"
 gcp_region = "${GOOGLE_PROJECT_REGION}"

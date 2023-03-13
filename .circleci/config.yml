@@ -38,7 +38,7 @@ jobs:
     environment:
       ENV: main
       PROJECT_NAME: gke
-    working_directory: ~/gke_terraform_gcp
+    working_directory: ~/project
     steps:
       - deploy:
           gcloud_service_key: GCLOUD_SERVICE_KEY

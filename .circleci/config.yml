@@ -88,8 +88,10 @@ commands:
               --format=json | jq '.[] | select(.description | fromjson | ."kubernetes.io/service-name" == $service_name) | .name' \
               --arg service_name "$SERVICE_NAME" --raw-output)
             envsubst < dev.tfvars.template > dev.tfvars
-            envsubst < backend.tfvars.template > backend.tfvars 
+            envsubst < backend.tfvars.template > backend.tfvars
+            echo ${GCLOUD_SERVICE_KEY} > key.json
             terraform init -backend-config ./backend.tfvars
+            rm key.json
             terraform plan -var-file ./dev.tfvars
             terraform validate -var-file ./dev.tfvars
             terraform refresh

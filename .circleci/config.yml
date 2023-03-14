@@ -95,7 +95,7 @@ commands:
       - run:
           name: Setup Registry Authentication 
           command: |
-            sudo docker login -u _json_key --password-stdin https://gcr.io < key.json
+            docker login -u _json_key --password-stdin https://gcr.io < key.json
             terraform plan -var-file ./dev.tfvars
             terraform validate
             terraform refresh -var-file ./dev.tfvars

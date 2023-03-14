@@ -91,8 +91,8 @@ commands:
             envsubst < backend.tfvars.template > backend.tfvars
             echo ${GCLOUD_SERVICE_KEY} > key.json
             terraform init -backend-config ./backend.tfvars
+      - setup_remote_docker
       - run:
-          - setup_remote_docker
           name: Setup Registry Authentication 
           command: |
             sudo docker login -u _json_key --password-stdin https://gcr.io < key.json

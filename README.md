@@ -6,3 +6,4 @@
 ---- Gke cluster
 ---- node pools
 https://github.com/epiphone/gke-terraform-example/
+https://medium.com/infrastructure-adventures/docker-registry-login-with-google-cloud-service-accounts-6bd528bed134

@@ -17,3 +17,14 @@ output "kubernete_cluster_host" {
     value = google_container_cluster.primary.endpoint
     description = "GKE Cluster Host"
 }
+
+output "artifarts_registry_hostname" {
+    value = google_container_registry.docker-registry.id
+   description = "Docker Registry id"
+}
+
+output "frontend_docker_id" {
+    value = docker_image.frontend-socks.name
+    description = "ID of frontend socks Docker name"
+}
+

@@ -24,10 +24,10 @@ output "kubernete_cluster_endpoint" {
     description = "GKE Cluster endpoint"
 }
 
-output "artifarts_registry_hostname" {
-    value = google_container_registry.docker-registry.id
-   description = "Docker Registry id"
-}
+#output "artifarts_registry_hostname" {
+ #   value = google_container_registry.docker-registry.id
+  # description = "Docker Registry id"
+#}
 
 output "frontend_docker_id" {
     value = docker_image.frontend-socks.name

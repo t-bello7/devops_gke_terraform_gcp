@@ -13,15 +13,15 @@ output "kubernete_cluster_name" {
     description = "GKE Cluster Name"
 }
 
-output "kubernete_cluster_zone" {
-    value = google_container_cluster.primary.zone
-    description = "GKE Cluster Zone"
+output "kubernete_cluster_location" {
+    value = google_container_cluster.primary.location
+    description = "GKE Cluster location"
 }
 
 
-output "kubernete_cluster_host" {
+output "kubernete_cluster_endpoint" {
     value = google_container_cluster.primary.endpoint
-    description = "GKE Cluster Host"
+    description = "GKE Cluster endpoint"
 }
 
 output "artifarts_registry_hostname" {

@@ -1,7 +1,7 @@
-resource "google_container_registry" "docker-registry" {
-    project = var.gcp_project_id
-    location = "US"
-}
+#resource "google_container_registry" "docker-registry" {
+ #   project = var.gcp_project_id
+  #  location = "US"
+#}
 
 resource "docker_image" "frontend-socks" {
     name = "frontend-socks"

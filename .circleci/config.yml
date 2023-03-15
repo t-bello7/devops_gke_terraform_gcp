@@ -93,47 +93,39 @@ commands:
             terraform init -backend-config ./backend.tfvars
       - setup_remote_docker
       - run:
-          name: Setup Registry Authentication 
+          name: Setup Registry Authentication, Initialize, validate and apply Terraform
           command: |
             docker login -u _json_key --password-stdin https://gcr.io < key.json
             terraform plan -var-file ./dev.tfvars
             terraform validate
             terraform refresh -var-file ./dev.tfvars
-      # - run:
-      #     name: Initialize, validate and apply Terraform
-      #     command: |
-      #       terraform plan -out=/tmp/tfplan -input=false
-      #       terraform apply -input=false -auto-approve /tmp/tfplan
-      #       terraform refresh
-
-      # Update Kubernetes application:
-      # - run:
-      #     name: Render Kubernetes template and lint
-      #     command: |
-      #       terraform output k8s_rendered_template > k8s.yml
-      #       ./kubeval k8s.yml
-      # - run:
-      #     name: Authenticate kubectl
-      #     command: |
-      #       gcloud container clusters get-credentials $(terraform output cluster_name) --zone $(terraform output cluster_zone)
+            terraform refresh -var-file ./dev.tfvars
+      - run:
+          name: Authenticate kubectl
+          command: |
+            gcloud container clusters get-credentials $(terraform output kubernete_cluster_name) --zone $(terraform output kubernete_cluster_zone)
+      
       # - run:
       #     name: Temporarily add CI server to k8s master allowed IPs
       #     command: |
-      #       gcloud container clusters update $(terraform output cluster_name) \
+      #       gcloud container clusters update $(terraform output kubernete_cluster_name) \
       #         --enable-master-authorized-networks \
       #         --master-authorized-networks=$(terraform output k8s_master_allowed_ip)/32,$(dig +short myip.opendns.com @resolver1.opendns.com)/32 \
-      #         --zone=$(terraform output cluster_zone)
-      # - run:
-      #     name: Apply kubectl
-      #     command: kubectl apply -f k8s.yml && kubectl rollout status deployment/gke-${ENV}
+      #         --zone=$(terraform output kubernete_cluster_zone)
+      - run:
+          name: Apply kubectl
+          working_directory: ~/project/microservices-demo-master
+          command: kubectl create namespace sock-shop && kubectl apply -f complete-demo.yaml 
       # - run:
       #     name: Remove CI server from k8s master allowed IPs
       #     command: |
-      #       gcloud container clusters update $(terraform output cluster_name) \
+      #       gcloud container clusters update $(terraform output kubernete_cluster_name) \
       #         --enable-master-authorized-networks \
       #         --master-authorized-networks=$(terraform output k8s_master_allowed_ip)/32 \
-      #         --zone=$(terraform output cluster_zone)
+      #         --zone=$(terraform output kubernete_cluster_zone)
       #     when: always
+
+
       # - run:
       #     name: Copy static assets to GCS bucket, invalidate CDN cache
       #     command: |

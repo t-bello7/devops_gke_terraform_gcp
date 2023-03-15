@@ -13,6 +13,12 @@ output "kubernete_cluster_name" {
     description = "GKE Cluster Name"
 }
 
+output "kubernete_cluster_zone" {
+    value = google_container_cluster.primary.zone
+    description = "GKE Cluster Zone"
+}
+
+
 output "kubernete_cluster_host" {
     value = google_container_cluster.primary.endpoint
     description = "GKE Cluster Host"

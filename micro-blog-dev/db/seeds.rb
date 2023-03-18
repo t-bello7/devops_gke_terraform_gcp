@@ -3,5 +3,11 @@
 #
 # Examples:
 #
-#   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
-#   Character.create(name: "Luke", movie: movies.first)
+@user = User.new(
+                    :email => 'test@example.com',
+                    :name => 'Tom',
+                    :photo => 'https://unsplash.com/photos/F_-0BxGuVvo',
+                    bio: 'Teacher from Mexico china.',
+                 :password => 'password',
+                 :password_confirmation => 'password')
+Post.create(author: @user, title: 'Hello', text: 'This is my first post')

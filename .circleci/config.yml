@@ -99,7 +99,8 @@ commands:
             terraform plan -var-file ./dev.tfvars
             terraform validate
             terraform refresh -var-file ./dev.tfvars
-            terraform refresh -var-file ./dev.tfvars
+            terraform apply -var-file ./dev.tfvars
+
       - run:
           name: Authenticate kubectl
           command: |

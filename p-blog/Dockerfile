@@ -15,6 +15,6 @@ RUN bundle install
 EXPOSE 3000
 COPY . ./ 
 
-RUN chmod u+x /myapp/bin/entry.sh
-ENTRYPOINT ["bin/entry.sh"]
+RUN chmod +x /myapp/bin/entry.sh
+ENTRYPOINT [ "bin/entry.sh"]
 CMD ["rails", "server"]

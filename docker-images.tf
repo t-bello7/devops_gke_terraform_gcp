@@ -1,7 +1,7 @@
 resource "docker_image" "personal-blog" {
     name = "personal-blog"
     build {
-        context = "./blog"
+        context = "./p-blog"
         tag = ["gcr.io/${var.gcp_project_id}/personal-blog"]
 #        tag = ["frontend-socks:latest"]
         label = {

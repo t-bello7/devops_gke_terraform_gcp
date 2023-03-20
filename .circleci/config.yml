@@ -1,112 +1,113 @@
-version: 2.1
+# version: 2.1
 
-workflows:
-  main-build-deploy:
-    jobs:
-      # - main
-      # Push to main branch triggers deployment to `main` environment:
-      - deploy-main:
-          # requires:
-          #   - main
-          filters:
-            branches:
-                only: main
+# workflows:
+#   main-build-deploy:
+#     jobs:
+#       # - main
+#       # Push to main branch triggers deployment to `main` environment:
+#       - deploy-main:
+#           # requires:
+#           #   - main
+#           filters:
+#             branches:
+#                 only: main
 
-jobs:
-  main:
-    docker:
-      - image: circleci/node:10
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "app/yarn.lock" }}
-            - v1-dependencies-
-      - run:
-          name: Install dependencies
-          command: cd front-end-master && yarn install
-      - save_cache:
-          paths:
-            - ~/.cache/yarn
-            - app/node_modules
-          key: v1-dependencies-{{ checksum "app/yarn.lock" }}
-      - run:
-          name: Run test
-          command: cd front-end-master && yarn test
-  deploy-main:
-    executor: default-executor
-    environment:
-      ENV: main
-      PROJECT_NAME: gke
-    working_directory: ~/project
-    steps:
-      - deploy:
-          gcloud_service_key: GCLOUD_SERVICE_KEY
-          google_project_id: GOOGLE_PROJECT_ID
+# jobs:
+#   main:
+#     docker:
+#       - image: circleci/node:10
+#     steps:
+#       - checkout
+#       - restore_cache:
+#           keys:
+#             - v1-dependencies-{{ checksum "app/yarn.lock" }}
+#             - v1-dependencies-
+#       - run:
+#           name: Install dependencies
+#           command: cd front-end-master && yarn install
+#       - save_cache:
+#           paths:
+#             - ~/.cache/yarn
+#             - app/node_modules
+#           key: v1-dependencies-{{ checksum "app/yarn.lock" }}
+#       - run:
+#           name: Run test
+#           command: cd front-end-master && yarn test
+#   deploy-main:
+#     executor: default-executor
+#     environment:
+#       ENV: main
+#       PROJECT_NAME: gke
+#     working_directory: ~/project
+#     steps:
+#       - deploy:
+#           gcloud_service_key: GCLOUD_SERVICE_KEY
+#           google_project_id: GOOGLE_PROJECT_ID
 
-executors:
-  default-executor:
-    docker:
-      - image: google/cloud-sdk:alpine
-    environment:
-      CLOUDSDK_CORE_DISABLE_PROMPTS: "1"
-      GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcloud-service-key.json
-      TF_IN_AUTOMATION: "true"
+# executors:
+#   default-executor:
+#     docker:
+#       - image: google/cloud-sdk:alpine
+#     environment:
+#       CLOUDSDK_CORE_DISABLE_PROMPTS: "1"
+#       GOOGLE_APPLICATION_CREDENTIALS: /tmp/gcloud-service-key.json
+#       TF_IN_AUTOMATION: "true"
 
-commands:
-  deploy:
-    description: Build and push docker image, update infra and kubernetes application
-    parameters:
-      gcloud_service_key:
-        type: env_var_name
-      google_project_id:
-        type: env_var_name
-    steps:
-      #Install deps, checkout repo & setup CLI tools:
-      - checkout:
-          path: ~/project
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --no-cache bind-tools docker gettext jq
-            apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community terraform
-            gcloud components install kubectl
-            wget https://github.com/garethr/kubeval/releases/download/0.7.3/kubeval-linux-amd64.tar.gz
-            tar xzvf kubeval-linux-amd64.tar.gz
-            chmod u+x kubeval
-      - run:
-          name: Authenticate Google Cloud client
-          command: |
-            echo ${<< parameters.gcloud_service_key >>} > ${GOOGLE_APPLICATION_CREDENTIALS}
-            gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
-            gcloud config set project ${<< parameters.google_project_id >>}
-      - run:
-          name: Initialize Terraform
-          command: |
-            export SERVICE_NAME=default/gke-$ENV  
-            export K8S_BACKEND_SERVICE_NAME=$(gcloud compute backend-services list  \
-              --format=json | jq '.[] | select(.description | fromjson | ."kubernetes.io/service-name" == $service_name) | .name' \
-              --arg service_name "$SERVICE_NAME" --raw-output)
-            envsubst < dev.tfvars.template > dev.tfvars
-            envsubst < backend.tfvars.template > backend.tfvars
-            echo ${GCLOUD_SERVICE_KEY} > key.json
-            terraform init -backend-config ./backend.tfvars
-      - setup_remote_docker
-      - run:
-          name: Setup Registry Authentication, Initialize, validate and apply Terraform
-          command: |
-            docker login -u _json_key --password-stdin https://gcr.io < key.json
-            terraform plan -var-file ./dev.tfvars -out=/tmp/tfplan
-            terraform validate
-            terraform apply -auto-approve /tmp/tfplan
-            terraform refresh -var-file ./dev.tfvars
-      - run:
-          name: Authenticate kubectl
-          command: |
-            gcloud container clusters get-credentials altschool-23-gke --zone us-west1-a
+# commands:
+#   deploy:
+#     description: Build and push docker image, update infra and kubernetes application
+#     parameters:
+#       gcloud_service_key:
+#         type: env_var_name
+#       google_project_id:
+#         type: env_var_name
+#     steps:
+#       #Install deps, checkout repo & setup CLI tools:
+#       - checkout:
+#           path: ~/project
+#       - run:
+#           name: Install dependencies
+#           command: |
+#             apk add --no-cache bind-tools docker gettext jq
+#             apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community terraform
+#             gcloud components install kubectl
+#             wget https://github.com/garethr/kubeval/releases/download/0.7.3/kubeval-linux-amd64.tar.gz
+#             tar xzvf kubeval-linux-amd64.tar.gz
+#             chmod u+x kubeval
+#       - run:
+#           name: Authenticate Google Cloud client
+#           command: |
+#             echo ${<< parameters.gcloud_service_key >>} > ${GOOGLE_APPLICATION_CREDENTIALS}
+#             gcloud auth activate-service-account --key-file=${GOOGLE_APPLICATION_CREDENTIALS}
+#             gcloud config set project ${<< parameters.google_project_id >>}
+#       - run:
+#           name: Initialize Terraform
+#           command: |
+#             export SERVICE_NAME=default/gke-$ENV  
+#             export K8S_BACKEND_SERVICE_NAME=$(gcloud compute backend-services list  \
+#               --format=json | jq '.[] | select(.description | fromjson | ."kubernetes.io/service-name" == $service_name) | .name' \
+#               --arg service_name "$SERVICE_NAME" --raw-output)
+#             envsubst < dev.tfvars.template > dev.tfvars
+#             envsubst < backend.tfvars.template > backend.tfvars
+#             echo ${GCLOUD_SERVICE_KEY} > key.json
+#             terraform init -backend-config ./backend.tfvars
+#       - setup_remote_docker
+#       - run:
+#           name: Setup Registry Authentication, Initialize, validate and apply Terraform
+#           command: |
+#             docker login -u _json_key --password-stdin https://gcr.io < key.json
+#             terraform plan -var-file ./dev.tfvars -out=/tmp/tfplan
+#             terraform validate
+#             terraform apply -auto-approve /tmp/tfplan
+#             terraform refresh -var-file ./dev.tfvars
+#       - run:
+#           name: Authenticate kubectl
+#           command: |
+#             gcloud container clusters get-credentials altschool-23-gke --zone us-west1-a
       
-      - run:
-          name: Apply kubectl
-          command: |
-            kubectl create namespace sock-shop --dry-run=client && kubectl apply -f edit-manifest.yaml
-            kubectl create namespace blog  --dry-run=client && kubectl apply -f p.yaml
+#       - run:
+#           name: Apply kubectl
+#           command: |
+#             kubectl create secret docker-registry gcr-json-key   --docker-server=gcr.io   --docker-username=_json_key   --docker-password="$(cat ~/Documents/gke-project/key.json)"   --docker-email=any@valid.email secret/gcr-json-key created
+#             kubectl create namespace sock-shop --dry-run=client && kubectl apply -f edit-manifest.yaml
+#             kubectl create namespace blog  --dry-run=client && kubectl apply -f p.yaml

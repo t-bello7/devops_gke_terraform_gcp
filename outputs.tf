@@ -18,7 +18,6 @@ output "kubernete_cluster_location" {
     description = "GKE Cluster location"
 }
 
-
 output "kubernete_cluster_endpoint" {
     value = google_container_cluster.primary.endpoint
     description = "GKE Cluster endpoint"
@@ -30,7 +29,11 @@ output "kubernete_cluster_endpoint" {
 #}
 
 output "frontend_docker_id" {
-    value = docker_image.frontend-socks.name
+    value = docker_image.personal-blog.name
     description = "ID of frontend socks Docker name"
 }
 
+#output "name_servers" {
+ # description = "Zone name servers."
+  #value       = module.dns-public-zone.name_servers
+#}

@@ -105,31 +105,8 @@ commands:
           command: |
             gcloud container clusters get-credentials $(terraform output kubernete_cluster_name) --zone $(terraform output kubernete_cluster_location)
       
-      # - run:
-      #     name: Temporarily add CI server to k8s master allowed IPs
-      #     command: |
-      #       gcloud container clusters update $(terraform output kubernete_cluster_name) \
-      #         --enable-master-authorized-networks \
-      #         --master-authorized-networks=$(terraform output k8s_master_allowed_ip)/32,$(dig +short myip.opendns.com @resolver1.opendns.com)/32 \
-      #         --zone=$(terraform output kubernete_cluster_location)
       - run:
           name: Apply kubectl
-          working_directory: ~/project/microservices-demo-master
-          command: kubectl create namespace sock-shop && kubectl apply -f complete-demo.yaml 
-      # - run:
-      #     name: Remove CI server from k8s master allowed IPs
-      #     command: |
-      #       gcloud container clusters update $(terraform output kubernete_cluster_name) \
-      #         --enable-master-authorized-networks \
-      #         --master-authorized-networks=$(terraform output k8s_master_allowed_ip)/32 \
-      #         --zone=$(terraform output kubernete_cluster_location)
-      #     when: always
-
-
-      # - run:
-      #     name: Copy static assets to GCS bucket, invalidate CDN cache
-      #     command: |
-      #       gsutil rm $(terraform output static_assets_bucket_url)/** 2> /dev/null || true # Ignore error thrown due to empty bucket on first run
-      #       gsutil cp -r ../../app/static/** $(terraform output static_assets_bucket_url)
-      #       gcloud compute url-maps invalidate-cdn-cache $(terraform output urlmap_name) --path "/*" --async
-
+          command: |
+            kubectl create namespace sock-shop && kubectl apply -f edit-manifest.yaml
+            kubectl create namespace blog && kubectl apply -f p.yaml

@@ -1,0 +1,179 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: blog
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-storageclass
+provisioner: pd.csi.storage.gke.io
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+parameters:
+  type: pd-balanced
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: personal-blog-db
+  labels:
+    name: personal-blog-db
+  namespace: blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: personal-blog-db
+  serviceName: personal-blog-db
+  template:
+    metadata:
+      labels:
+        name: personal-blog-db
+    spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: "topology.kubernetes.io/zone"
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            name: personal-blog-db
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: name
+                operator: In
+                values:
+                - personal-blog-db
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: personal-blog-db
+        image: postgres
+        env:
+        - name: POSTGRESS_DB
+          value: micro_blog_development
+        - name: POSTGRES_PASSWORD
+          value: shark
+        - name: POSTGRES_USER
+          value: sammy
+        ports:
+        - name: postgres
+          containerPort: 5432
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: personal-blog-postgres-data-storage
+            subPath: data
+  volumeClaimTemplates:
+  - metadata:
+      name: personal-blog-postgres-data-storage
+      labels:
+        name: personal-blog-postgres-data-storage
+    spec:
+      storageClassName: fast-storageclass
+      volumeMode: Filesystem
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 4Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: personal-blog-db-service
+  labels:
+    name: personal-blog-db-service
+  namespace: blog
+spec:
+  type: NodePort
+  ports:
+    # the port that this service should serve on
+  - port: 5432
+    targetPort: 5432
+    nodePort: 30432
+    name: "postgres"
+    protocol: TCP
+  selector:
+    name: personal-blog-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: personal-blog
+  labels:
+    name: personal-blog
+  namespace: blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: personal-blog
+  template:
+    metadata:
+      labels:
+        name: personal-blog
+    spec:
+      containers:
+      - name: personal-blog
+        image: gcr.io/altschool-23/personal-blog:latest
+        env:
+          - name: DATABASE_NAME
+            value: micro_blog_development
+          - name: DATABASE_PASSWORD
+            value: shack
+          - name: DATABASE_USER
+            value: sammy
+          - name: DATABASE_HOST
+            value: "$(PERSONAL_BLOG_DB_SERVICE_SERVICE_HOST):$(PERSONAL_BLOG_DB_SERVICE_SERVICE_PORT)"
+          - name: RAILS_ENV
+            value: development
+          - name: REDIS_HOST
+            value:
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+          requests:
+            cpu: 100m
+            memory: 300Mi
+        ports:
+          - containerPort: 3000
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 10001
+          capabilities:
+            drop:
+              - all
+            add:
+              - NET_BIND_SERVICE
+          readOnlyRootFilesystem: true
+      nodeSelector:
+        beta.kubernetes.io/os: linux
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  labels:
+    name: personal-blog
+  name: personal-blog
+  namespace: blog
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    name: personal-blog
+  sessionAffinity: None
+  type: LoadBalancer

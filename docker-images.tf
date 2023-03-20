@@ -1,13 +1,8 @@
-#resource "google_container_registry" "docker-registry" {
- #   project = var.gcp_project_id
-  #  location = "US"
-#}
-
-resource "docker_image" "frontend-socks" {
-    name = "frontend-socks"
+resource "docker_image" "personal-blog" {
+    name = "personal-blog"
     build {
-        context = "./front-end-master"
-        tag = ["gcr.io/${var.gcp_project_id}/frontend-socks"]
+        context = "./blog"
+        tag = ["gcr.io/${var.gcp_project_id}/personal-blog"]
 #        tag = ["frontend-socks:latest"]
         label = {
             author: "tbello"
@@ -15,8 +10,7 @@ resource "docker_image" "frontend-socks" {
     }
 }
 
-resource "docker_registry_image" "helloworld" {
-  name          = "gcr.io/altschool-23/${docker_image.frontend-socks.name}"
+resource "docker_registry_image" "personal-image-registry" {
+  name          = "gcr.io/altschool-23/${docker_image.personal-blog.name}"
   keep_remotely = true
 }
-# sudo docker login -u _json_key --password-stdin https://gcr.io < key.json

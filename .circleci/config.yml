@@ -98,7 +98,7 @@ commands:
             docker login -u _json_key --password-stdin https://gcr.io < key.json
             terraform plan -var-file ./dev.tfvars -out=/tmp/tfplan
             terraform validate
-            terraform apply -var-file ./dev.tfvars -auto-approve /tmp/tfplan
+            terraform apply -auto-approve /tmp/tfplan
             terraform refresh -var-file ./dev.tfvars
       - run:
           name: Authenticate kubectl

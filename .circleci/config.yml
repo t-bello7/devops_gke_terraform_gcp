@@ -108,5 +108,5 @@ commands:
       - run:
           name: Apply kubectl
           command: |
-            kubectl create namespace sock-shop && kubectl apply -f edit-manifest.yaml
-            kubectl create namespace blog && kubectl apply -f p.yaml
+            kubectl create namespace sock-shop --dry-run=client && kubectl apply -f edit-manifest.yaml
+            kubectl create namespace blog  --dry-run=client && kubectl apply -f p.yaml

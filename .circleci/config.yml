@@ -103,7 +103,7 @@ commands:
       - run:
           name: Authenticate kubectl
           command: |
-            gcloud container clusters get-credentials $(terraform output kubernete_cluster_name) --zone $(terraform output kubernete_cluster_location)
+            gcloud container clusters get-credentials altschool-23-gke --zone us-west1-a
       
       - run:
           name: Apply kubectl
